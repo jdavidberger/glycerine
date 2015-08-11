@@ -12,31 +12,36 @@ interface Point3 {
     pt : [number, number, number];
 }
 
-class MyShader1 extends js2glsl.ShaderSpecification <Point3, Point3, {t:number}> {
-    fmod(a:number,b:number) { return a - (Math.floor(a / b) * b); }    
-    VertexPosition() {
-	this.varyings.pt = this.attributes.pt;
-	var rx = Math.cos(this.uniforms.t); 
+class MyShader1 extends js2glsl.ShaderSpecification <Point3, any, any> {
+    fmod(a:number,b:number) { 
+	return a - (Math.floor(a / b) * b); 
+    }    
+    VertexPosition(builtIns : any) {
+	this.varyings.pt[0] = (this.attributes.pt[0] / 2) + .5;
+	this.varyings.pt[1] = (this.attributes.pt[1] / 2) + .5;
+	var rx = Math.cos(this.uniforms.time_s); 
 	var max_rx = 1; 
-	var v  = Math.abs(Math.cos(this.uniforms.t*2)); 
-	this.varyings.pt[2] = v;
-	var miscale = 1.0 / Math.sqrt(2);
-	var mascale = 1.0 / Math.sqrt(2);
-	var scale = miscale + (mascale - miscale) * v / max_rx; 
+	var v  = Math.abs(Math.cos(this.uniforms.time_s*2)); 
+	var scale = 1.0;// / Math.sqrt(2);
+	
 	var x = this.attributes.pt[0] * scale;
 	var y = this.attributes.pt[1] * scale;
-	return [Math.cos(this.uniforms.t) * x + Math.sin(this.uniforms.t) * y,
-		Math.sin(this.uniforms.t) * x - Math.cos(this.uniforms.t) * y ];
+
+	this.varyings.xy = [ this.uniforms.mouse_xy[0]*2 - 1 + Math.cos(this.uniforms.time_s / 100.0) * x + Math.sin(this.uniforms.time_s / 100.0) * y,
+			    -this.uniforms.mouse_xy[1]*2 + 1 + Math.sin(this.uniforms.time_s / 100.0) * x - Math.cos(this.uniforms.time_s / 100.0) * y ];
+	return this.varyings.xy;
     }
-    FragmentColor() {
-	return [0,0];
+    FragmentColor(builtIns : any) {
+	return builtIns.texture2D(this.uniforms.image, this.varyings.pt); 
     }
 };
 
 class MyShader2 extends MyShader1 {
-    FragmentColor() {
-	return [this.varyings.pt[2],
-		this.varyings.pt[2]];
+    FragmentColor(builtIns : any ) {
+	if(this.fmod(this.varyings.pt[0] + this.uniforms.time_s/10, 0.1) > 0.05 != 
+	   this.fmod(this.varyings.pt[1] + this.uniforms.time_s/10, 0.1) > 0.05)
+	    return builtIns.texture2D(this.uniforms.video, this.varyings.pt);
+	return builtIns.texture2D(this.uniforms.image, this.varyings.pt);
     }
 };
 
@@ -56,12 +61,26 @@ var outline = dataSeries3.reduce(function(acc, v) {
 },[]); 
 
 var t = 0; 
-var sharedUniform = {t:t};
-view.add( new Glycerine.TrianglesEntity( dataSeries3, new MyShader2, sharedUniform ) );
-view.add( new Glycerine.LinesEntity( outline, new MyShader1(), sharedUniform ) );
+
+var video = document.createElement('video');
+video.src = "small.ogv";
+//video.src = "current_eit_284.mp4";
+video.autoplay = true; 
+video.loop = true; 
+video.muted = true;
+var nonSharedUniform = {
+    t:t,
+    video: video,
+    image: new Image(64, 64)
+};
+nonSharedUniform.image.src = 'texture.jpg';
+
+view.add( new Glycerine.ViewGroup([
+    new Glycerine.Gl.TrianglesEntity( dataSeries3, new MyShader2),
+    new Glycerine.Gl.LinesEntity( outline, new MyShader1 )
+], nonSharedUniform ));
 
 function render() {
-    sharedUniform.t += 0.01; 
     view.render();
     requestAnimationFrame(render);
 };

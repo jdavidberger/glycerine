@@ -19,15 +19,62 @@ function getExpectedGlSize(gl : WebGLRenderingContext, info : WebGLActiveInfo) {
     throw new Error("Unexpected type");
 }
 
+type GlValue = number | number[];
+
 
 interface Hashtable<V> {
     [key: string] : V; 
 };
+class ObjectUniformsProvider implements UniformsProvider{
+    constructor(public obj : any) {
+	
+    }
+    get(k:string) : V {
+	if(obj[k])
+	    return obj[k]
+	return null;
+    }
+}
 
-class GlEntity<T,U,V> implements IViewEntity {
+class ListUniformsProvider implements UniformsProvider {
+    constructor(public lst : UniformsProvider[]) {}
+    get(k:string) : V {
+	for(var i = 0;i < lst.length;i++) {
+	    var r = lst[i].get(k);
+	    if(r !== null)
+		return r;
+	}
+	if(obj[k])
+	    return obj[k]
+	return null;
+    }
+
+}
+
+class UniformEntity<U> implements IViewEntity {
+    constructor(public uniforms : U = null ) {               
+    }
+    render(view : View) { throw new Error("Virtual class"); }
+}
+
+export class UniformGroup<U> extends UniformEntity<U> {
+    constructor(public children : UniformEntity<U>[] = [], public uniforms : U = null) {               
+	super(uniforms);
+	this.children.forEach(c => c.uniforms = uniforms); 
+    }   
+    render(view : View) { 
+	this.children.forEach(e => e.render(view));
+    }
+    
+    preRender() {}
+    postRender() {}
+}
+
+class GlEntity<T,U,V> extends UniformEntity<U> {
     buffers : Hashtable<[WebGLBuffer,number]>; 
 
-    constructor(public shaderSpec : js2glsl.ShaderSpecification<T,V,U>, public uniforms : U = null ) {                
+    constructor(public shaderSpec : js2glsl.ShaderSpecification<T,V,U>, uniforms : U = null ) {                
+	super(uniforms); 
         this.buffers = {}; 
     }
 
@@ -105,8 +152,8 @@ class GlEntity<T,U,V> implements IViewEntity {
 	    var info = gl.getActiveUniform(program, i); 
 	    this.setUniform(gl, program, info); 
 	}
-
     }    
+
     getProgram(gl : WebGLRenderingContext) {
         return this.shaderSpec.GetProgram(gl); 
     }
