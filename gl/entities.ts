@@ -34,7 +34,6 @@ class TupleListEntity <T, U, V, TT> extends GlEntity<T,U,V> {
 		for(var j = 0;j < elemSize;j++)
 		    rtn[currIdx++] = elemSize == 1 ? data[i][idx][n] : data[i][idx][n][j];
         }
-	console.log(this,rtn);
         return [rtn, elemSize];
     }
 
