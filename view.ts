@@ -47,7 +47,7 @@ class View extends ViewUniformsProvider  {
     canvas3d: HTMLCanvasElement;
     canvas2d: HTMLCanvasElement;
     
-    constructor(public div: HTMLDivElement, options : any) {	
+    constructor(public div: HTMLDivElement, options : any = {}) {	
 	super(div);
 	this.canvas3d = document.createElement('canvas');
 	this.canvas2d = document.createElement('canvas');
