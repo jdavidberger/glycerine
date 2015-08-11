@@ -11,14 +11,6 @@ function Texture2DShader() {
 
 Texture2DShader.prototype = Object.create(js2glsl.ShaderSpecification.prototype); 
 Texture2DShader.prototype.constructor = Texture2DShader; 
-
-function squish(d) { 
-    if($("#use_log_dist:checked").length)
-	d = d > 0 ? Math.log(d+1) : Math.log(-d+1); 
-    return d; 
-}
-
-Texture2DShader.prototype.squish = squish; 
 Texture2DShader.prototype.VertexPosition = function(builtIns) {
     var xy = this.attributes.xy;
     this.varyings.uv = [xy[0] / 2 + .5,
@@ -54,29 +46,22 @@ TextureEntity.prototype = Object.create(Glycerine.Gl.TriangleStripEntity.prototy
 TextureEntity.prototype.constructor = TextureEntity;
 
 function ortho(left, right, bottom, top, near, far) {
-    var out = [];
     var lr = 1 / (left - right),
         bt = 1 / (bottom - top),
         nf = 1 / (near - far);
-    out[0] = -2 * lr;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = -2 * bt;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = 2 * nf;
-    out[11] = 0;
-    out[12] = (left + right) * lr;
-    out[13] = (top + bottom) * bt;
-    out[14] = (far + near) * nf;
-    out[15] = 1;
-    return out;
+    return  [ -2 * lr,       0,    0, 0, 
+	            0, -2 * bt,    0, 0,
+	            0,       0, 2*nf, 0,
+	    (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1]
+
 };
 
+
+function squish(d) { 
+    if($("#use_log_dist:checked").length)
+	d = d > 0 ? Math.log(d+1) : Math.log(-d+1); 
+    return d; 
+}
 
 var ED = 1 / 10;
 var LM = 1; 
@@ -225,20 +210,9 @@ solarSystem.Sun = new System("Sun", {view:viewMat, size: 1E6 * km, center:offset
 			 solarSystem.Pluto
 		     ])
 
-//solarSystem.Galaxy = new System("Galaxy", {view:viewMat, center:[0,0], size:1,sizeComp:1}, [solarSystem.Sun]); 
-
 var tracking = solarSystem.Sun;
 var prevTracking = solarSystem.Sun; 
 var iterationsHere = 0;
-for(var obj in solarSystem) {
-    $("<option />", { text: obj }).appendTo($("select")); 
-}
-
-$("select").on('change', function() {
-    prevTracking = tracking; 
-    tracking = solarSystem[ $("select").val() ];
-    iterationsHere = 0;
-});
 
 function viewMat(values) {
     var d = 40 *AU;
@@ -262,33 +236,15 @@ function viewMat(values) {
 };
 
 view.add( solarSystem.Sun );
-/*
-view.add( new Group([
-    new TextureEntity({size: 1E6 * km, sizeComp:1, img:loadImage('sun.jpg') }), //Sun 
-    new TextElement('Sun'),
-    new TextureEntity({size: 4900  * km, center:offset_from_parent(3.2 *LM, 88 * ED), img:loadImage('mercury.jpg'),  }), // Mercury
-    new TextureEntity({size: 12100 * km, center:offset_from_parent(6.0 *LM, 224.7 * ED), img:loadImage('venus.jpg') }), // Venus
-    new Group([ // Earth System
-	new TextureEntity({size: 12800 * km, img:loadImage('earth.jpg') }), // Earth
-	new TextElement('Earth'),
-	new TextureEntity({size: 3474.8 * km, img:loadImage('moon.jpg'), center:offset_from_parent(384400 * km, 27.32 * ED)}) // Moon
-    ], {center: offset_from_parent(8.3167464 * LM, 365.25 * ED) }),
-    new Group([ // Mars system
-	new TextureEntity({size: 6800 * km, img:loadImage('mars.jpg') }), // Mars
-	new TextureEntity({size: 8  * km, img:loadImage('moon.jpg'), center:offset_from_parent(23460 * km, 1.2 * ED)}), // Deimos
-	new TextureEntity({size: 28 * km, img:loadImage('moon.jpg'), center:offset_from_parent(9270  * km, 0.319 * ED)}) // Phobos
-    ], {center:offset_from_parent(12.6 *LM, 687 * ED)}),
-    new Group([
-	new TextureEntity({size: 143000 * km, img:loadImage('jupiter.jpg') }), // Jupiter
-	new TextureEntity({size: 3126  * km, img:loadImage('moon.jpg'), center:offset_from_parent(1883000 * km, 16.689 * ED)}), 
-	new TextureEntity({size: 4800  * km, img:loadImage('moon.jpg'), center:offset_from_parent(670900  * km, 3.551 * ED)}), 
-	new TextureEntity({size: 5276  * km, img:loadImage('moon.jpg'), center:offset_from_parent(1070000 * km, 7.155 * ED)}), 
-	new TextureEntity({size: 3629 * km, img:loadImage('moon.jpg'), center:offset_from_parent(421600 * km, 1.769 * ED)}), 
-    ], {center:offset_from_parent(43.2*LM, 11.9 * EY)}),
-    new TextureEntity({size: 125000 * km, center:offset_from_parent(79.3*LM, 29.7 * EY), img:loadImage('saturn.jpg') }), // Saturn
-    new TextureEntity({size: 51100 * km, center:offset_from_parent(159.6*LM, 84.3 * EY), img:loadImage('uranus.jpg') }), // Uranus
-    new TextureEntity({size: 49500 * km, center:offset_from_parent(4.1*60*LM, 164.8 * EY), img:loadImage('neptune.jpg') }), // Neptune
-    new TextureEntity({size: 2300 * km, center:offset_from_parent(39.4 * AU, 248 * EY), img:loadImage('pluto.jpg') }), // Pluto
-], {view:viewMat, center:[0,0], sizeComp:1 }));
-*/
+
+for(var obj in solarSystem) {
+    $("<option />", { text: obj }).appendTo($("select")); 
+}
+
+$("select").on('change', function() {
+    prevTracking = tracking; 
+    tracking = solarSystem[ $("select").val() ];
+    iterationsHere = 0;
+});
+
 view.startRenderLoop(); 
