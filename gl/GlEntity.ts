@@ -1,13 +1,14 @@
 /// <reference path="../typings/es6-collections/es6-collections.d.ts"/>
 
 import IViewEntityNS = require('../ViewEntity');
-import IViewEntity   = IViewEntityNS.IViewEntity;
+import IEntity   = IViewEntityNS.IEntity;
 import View = require('../View');
 import UniformEntity = require("./UniformEntity")
 
 import GlCore = require("./core")
 import ShaderSpecification = GlCore.ShaderSpecification;
 import Hashtable = GlCore.Hashtable;
+import ViewModels = require("../ViewModels");
 
 function getImageData(value : GlCore.GlTextureTypes) : ImageData {
     if(value instanceof Image)
@@ -17,14 +18,14 @@ function getImageData(value : GlCore.GlTextureTypes) : ImageData {
 
 class TextureMapping {
     textureTypesToIds    : WeakMap<GlCore.GlTextureTypes, number>;
-    glEntityUniformToIds : WeakMap<IViewEntity, Hashtable<[number, WebGLTexture]> >;
+    glEntityUniformToIds : WeakMap<IEntity, Hashtable<[number, WebGLTexture]> >;
     nextId : number;
     constructor(public gl : WebGLRenderingContext) {
 	this.textureTypesToIds = new WeakMap<GlCore.GlTextureTypes, number>();
-	this.glEntityUniformToIds = new WeakMap<IViewEntity, Hashtable<[number, WebGLTexture]> >();
+	this.glEntityUniformToIds = new WeakMap<IEntity, Hashtable<[number, WebGLTexture]> >();
 	this.nextId = 0; 
     }
-    getEntityHash(entity: IViewEntity) {
+    getEntityHash(entity: IEntity) {
 	var nameToIdxHash = this.glEntityUniformToIds.get(entity); 
 	if(nameToIdxHash === undefined) {
 	    nameToIdxHash = {};
@@ -35,7 +36,7 @@ class TextureMapping {
     getNextId() : number {
 	return this.nextId++; 
     }
-    getOrMap(entity : IViewEntity, name : string, v : GlCore.GlTextureTypes) {
+    getOrMap(entity : IEntity, name : string, v : GlCore.GlTextureTypes) {
 	var textureIdx = this.textureTypesToIds.get(v); 
 
 	// This means that a new value was filled in for the texture. We could still have a space allocated, but we will have to rebind the texture. 
@@ -184,21 +185,24 @@ class GlEntity<T,U,V> extends UniformEntity<U> {
     setUniform(gl : WebGLRenderingContext, program : WebGLProgram, info : WebGLActiveInfo) {
 	var location = gl.getUniformLocation(program, info.name);
 	var v = this.getValue(info.name); 
+
 	if(v == null) {
 	    throw new Error("Could not find uniform for name " + info.name + ". Available uniform names are : " + 
 			    this.getProvidedValues().join(", ")); 
 	}
 	var isArray = info.size > 1; 
 	var name = "uniform";
+
+	if(v.get4x4) {
+	    v = v.get4x4();
+	}
 	
 	var fn : any = this.getUniformSetFunction(gl, info);
 	fn(gl, location, v);
     }
     
     draw(gl : WebGLRenderingContext) {}
-    render() {
-	this.prerenderCallbacks.forEach(cb => cb()); 
-        var gl = this.getView().gl;
+    render(gl : WebGLRenderingContext) {
         var program = this.getProgram(gl);
         gl.useProgram(program);        
 

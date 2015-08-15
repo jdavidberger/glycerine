@@ -1,5 +1,3 @@
-import Gl = require("Gl");
-
 import View = require('../View');
 import UniformEntity = require("./UniformEntity")
 import GlEntity = require('./GlEntity')
@@ -75,7 +73,7 @@ class ListEntity <T, U, V> extends GlEntity<T,U,V> {
 }
 
 
-export class TrianglesEntity <T,U,V> extends TupleListEntity<T, U, V, [T, T, T]> {
+export class Triangles<T,U,V> extends TupleListEntity<T, U, V, [T, T, T]> {
     constructor(public data : [T,T,T] [], 
 		shaderSpec : ShaderSpecification<T,V,U>, 
 		u : U = null) {
@@ -83,7 +81,7 @@ export class TrianglesEntity <T,U,V> extends TupleListEntity<T, U, V, [T, T, T]>
     }
 }
 
-export class TriangleStripEntity <T,U,V> extends ListEntity<T,U,V> {    
+export class TriangleStrip<T,U,V> extends ListEntity<T,U,V> {    
     constructor(public data : T[], shaderSpec : ShaderSpecification<T,V,U>, u : U) {
         super(data, shaderSpec, "TRIANGLE_STRIP", u);        
 	if(data.length < 3) {
@@ -92,7 +90,7 @@ export class TriangleStripEntity <T,U,V> extends ListEntity<T,U,V> {
     }
 }
 
-export class TriangleFanEntity <T,U,V> extends ListEntity<T,U,V> {    
+export class TriangleFan<T,U,V> extends ListEntity<T,U,V> {    
     constructor(public data : T[], shaderSpec : ShaderSpecification<T,V,U>, u : U) {
         super(data, shaderSpec, "TRIANGLE_FAN", u);        
 	if(data.length < 3) {
@@ -101,19 +99,19 @@ export class TriangleFanEntity <T,U,V> extends ListEntity<T,U,V> {
     }
 }
 
-export class LinesEntity <T,U,V> extends TupleListEntity<T,U,V, [T,T]> {
+export class Lines<T,U,V> extends TupleListEntity<T,U,V, [T,T]> {
     constructor(public data : [T,T] [], shaderSpec : ShaderSpecification<T,V,U>, u : U = null) {
         super(data, 2, shaderSpec, "LINES", u);        
     }
 };
 
-class LineLoopEntity <T,U,V> extends ListEntity<T,U,V> {
+export class LineLoop<T,U,V> extends ListEntity<T,U,V> {
     constructor(public data : T[], shaderSpec : ShaderSpecification<T,V,U>, u : U = null) {
         super(data, shaderSpec, "LINE_LOOP", u);        
     }
 }
 
-class LineStripEntity <T,U,V> extends ListEntity<T,U,V> {    
+export class LineStrip<T,U,V> extends ListEntity<T,U,V> {    
     constructor(public data : T[], shaderSpec  : ShaderSpecification<T,V,U>, u : U = null) {
         super(data, shaderSpec, "LINE_STRIP", u);        
 	if(data.length < 2) {
@@ -122,7 +120,7 @@ class LineStripEntity <T,U,V> extends ListEntity<T,U,V> {
     }
 }
 
-class PointsEntity <T,U,V> extends ListEntity<T,U,V> {
+export class Points<T,U,V> extends ListEntity<T,U,V> {
     constructor(public data : T[], shaderSpec : ShaderSpecification<T,V,U>, u : U = null) {
 	super(data, shaderSpec, "POINTS", u);        
     }

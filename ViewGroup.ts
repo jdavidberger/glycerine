@@ -2,7 +2,7 @@ import IViewEntityNS = require("./ViewEntity");
 import IViewEntity = IViewEntityNS.IViewEntity;
 import Core = require("./Gl/core");
 
-class ObjectUniformsProvider extends IViewEntityNS.ViewEntityBase {
+export class ObjectUniformsProvider extends IViewEntityNS.ViewEntityBase {
     constructor(public uniformObject : any, parent : IViewEntity = null) {
 	super(parent);
     }
@@ -21,6 +21,22 @@ class ObjectUniformsProvider extends IViewEntityNS.ViewEntityBase {
     }
 }
 
+
+class ViewGroup_<T> extends ObjectUniformsProvider {
+    constructor(public children: ILayerEntity<T>[] = [], obj : any = null) {
+	super(obj);
+	this.children.forEach(c => c.parent = this);
+    }
+    add( entity : IViewEntity ) {
+        this.children.push(entity);
+	entity.parent = this; 
+    }
+    render( t : T) {
+	super.render(); 
+        this.children.forEach(e => e.render(t));
+    }
+}
+
 class ViewGroup extends ObjectUniformsProvider {
     constructor(public children: IViewEntity[] = [], obj : any = null) {
 	super(obj);
@@ -34,7 +50,7 @@ class ViewGroup extends ObjectUniformsProvider {
 	super.render(); 
         this.children.forEach(e => e.render());
     }
-
 }
+
 
 export = ViewGroup;

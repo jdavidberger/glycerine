@@ -1,18 +1,23 @@
-/// <reference path="./Gl/Gl.ts"/>
-/// <reference path="./Gl/entities.ts"/>
+/// <reference path='./Canvas/Canvas.ts'/>
+/// <reference path='./Canvas/Entity.ts'/>
+/// <reference path='./view.ts'/>
 
 import View = require('./view')
 import ViewEntity = require('./ViewEntity')
-import Gl = require('./Gl/Gl')
-import ViewGroup = require('./ViewGroup')
-//import GlViewEntities = require('./GlViewEntities')
+import GL = require('./GL/GL')
+import ViewModels = require('./ViewModels');
+import SVG = require("./SVG/index"); 
+import Canvas = require('./Canvas/Canvas');
 
-export = {
+var Glycerine : any = {
     View: View,
-    ViewEntity: ViewEntity,
-    Gl: Gl,
-    ViewGroup: ViewGroup
-  /*  
+    GL: GL,
+    Canvas: Canvas,
+    ViewModels: ViewModels,
+    SVG : SVG
+    //ViewEntity: ViewEntity,    
+    //ViewGroup: ViewGroup
+    /*  
     UniformsProvider: GlViewEntities.UniformsProvider,
 
     LineStripEntity: GlViewEntities.LineStripEntity,
@@ -22,5 +27,6 @@ export = {
     LinesEntity: GlViewEntities.LinesEntity,
     LineLoopEntity: GlViewEntities.LineLoopEntity,
     PointsEntity:  GlViewEntities.PointsEntity,
-    UniformGroup : GlViewEntities.UniformGroup*/
+    UniformGroup : GlViewEntities.*/
 }
+export = Glycerine;

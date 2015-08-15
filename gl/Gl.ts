@@ -1,12 +1,6 @@
-
-
-import entities = require ("./entities")
-
-var e : any = {};
-var _entities : any = entities; 
-for(var n in _entities) {
-    e[n] = _entities[n]; 
+import LayerNS = require ("./layer");
+import Entities = require("./Entities");
+export = {
+    Layer: LayerNS.Layer,
+    Entities: Entities
 }
-
-
-export = e;
