@@ -3,7 +3,6 @@
 import IViewEntityNS = require('../ViewEntity');
 import IEntity   = IViewEntityNS.IEntity;
 import View = require('../View');
-import UniformEntity = require("./UniformEntity")
 
 import GlCore = require("./core")
 import ShaderSpecification = GlCore.ShaderSpecification;
@@ -121,7 +120,7 @@ function getTextureMapping( gl : WebGLRenderingContext ) {
 
 
 
-class GlEntity<T,U,V> extends UniformEntity<U> {
+class GlEntity<T,U,V> extends IViewEntityNS.ObjectUniformsProvider {
     buffers : Hashtable<[WebGLBuffer,number]>; 
 
     constructor(public shaderSpec : ShaderSpecification<T,V,U>, uniforms : U = null ) {                
@@ -205,6 +204,8 @@ class GlEntity<T,U,V> extends UniformEntity<U> {
     render(gl : WebGLRenderingContext) {
         var program = this.getProgram(gl);
         gl.useProgram(program);        
+
+	super.render(gl);
 
         var numAttribs = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);        
         for (var i = 0; i < numAttribs; ++i) {

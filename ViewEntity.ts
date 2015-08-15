@@ -52,6 +52,9 @@ export class ObjectUniformsProvider extends EntityBase {
     getProvidedValues() {
 	return Object.keys(this.uniformObject);
     }
+    render ( t : any) {
+	super.render(t); 
+    }
 }
 
 

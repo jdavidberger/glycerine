@@ -1,5 +1,4 @@
 import View = require('../View');
-import UniformEntity = require("./UniformEntity")
 import GlEntity = require('./GlEntity')
 
 import GlCore = require("./core")
